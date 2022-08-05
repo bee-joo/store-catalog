@@ -25,10 +25,6 @@ public class AddressService {
     private AddressMapper addressMapper;
     private StoreMapper storeMapper;
 
-    public List<Address> idsToAddress(Set<String> ids) {
-        return (List<Address>) addressRepository.findAllById(ids);
-    }
-
     public ResponseEntity<AddressView> findAddressById(String id) {
         Optional<Address> address = addressRepository.findById(id);
 

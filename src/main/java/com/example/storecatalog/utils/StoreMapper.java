@@ -3,6 +3,7 @@ package com.example.storecatalog.utils;
 import com.example.storecatalog.document.Address;
 import com.example.storecatalog.document.Store;
 import com.example.storecatalog.dto.StoreDTO;
+import com.example.storecatalog.repository.AddressRepository;
 import com.example.storecatalog.service.AddressService;
 import com.example.storecatalog.view.StoreView;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.List;
 public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
 
     private AddressMapper addressMapper;
-    private AddressService addressService;
+    private AddressRepository addressRepository;
 
     @Override
     public StoreView toView(Store entity) {
@@ -26,7 +27,7 @@ public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
         storeView.setDescription(entity.getDescription());
 
         if(entity.getAddresses() != null) {
-            List<Address> addresses = addressService.idsToAddress(entity.getAddresses());
+            List<Address> addresses = (List<Address>) addressRepository.findAllById(entity.getAddresses());
             storeView.setAddresses(addresses
                     .stream()
                     .map(it -> addressMapper.toView(it))
