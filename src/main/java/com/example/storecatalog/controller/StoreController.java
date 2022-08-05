@@ -7,10 +7,12 @@ import com.example.storecatalog.dto.StoreDTO;
 import com.example.storecatalog.service.StoreService;
 import com.example.storecatalog.view.AddressView;
 import com.example.storecatalog.view.StoreView;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/store")
@@ -22,7 +24,7 @@ public class StoreController {
     }
 
     @GetMapping
-    List<Store> getAllStores() {
+    List<StoreView> getAllStores() {
         return storeService.findAllStores();
     }
 
@@ -42,12 +44,24 @@ public class StoreController {
     }
 
     @PostMapping("/{id}/address")
-    ResponseEntity<List<Address>> postStoreAddress(@PathVariable String id, @RequestBody List<AddressDTO> addresses) {
+    ResponseEntity<List<Address>> postStoreAddress(@PathVariable String id, @RequestBody Set<AddressDTO> addresses) {
         return storeService.addAddressToStore(id, addresses);
     }
 
+    @PatchMapping({"/{id}"})
+    ResponseEntity<Store> putStore(@PathVariable String id, @RequestBody StoreDTO storeDTO) {
+        return storeService.updateStore(id, storeDTO);
+    }
+
+    @PatchMapping("/{storeId}/address/{addressId}")
+    ResponseEntity<Address> putStoreAddress(@PathVariable String storeId,
+                                            @PathVariable String addressId,
+                                            @RequestBody AddressDTO addressDTO) {
+        return storeService.updateStoreAddress(storeId, addressId, addressDTO);
+    }
+
     @DeleteMapping("/{id}")
-    void deleteStore(@PathVariable String id) {
-        storeService.deleteStore(id);
+    HttpStatus deleteStore(@PathVariable String id) {
+        return storeService.deleteStore(id);
     }
 }
