@@ -29,4 +29,13 @@ public class AddressMapper implements Mapper<Address, AddressView, AddressDTO>{
 
         return address;
     }
+
+    @Override
+    public Address toEntity(AddressDTO dto, Address entity) {
+        if (dto.getStreet() != null) entity.setStreet(dto.getStreet());
+        if (dto.getCity() != null) entity.setCity(dto.getCity());
+        if (dto.getCountry() != null) entity.setCountry(dto.getCountry());
+
+        return entity;
+    }
 }
