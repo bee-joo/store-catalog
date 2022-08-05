@@ -4,7 +4,6 @@ import com.example.storecatalog.document.Address;
 import com.example.storecatalog.document.Store;
 import com.example.storecatalog.dto.StoreDTO;
 import com.example.storecatalog.repository.AddressRepository;
-import com.example.storecatalog.service.AddressService;
 import com.example.storecatalog.view.StoreView;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
