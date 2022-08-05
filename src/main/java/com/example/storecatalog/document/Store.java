@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import java.util.Set;
 
 @Document
 @Getter
@@ -19,5 +19,5 @@ public class Store {
     private String name;
     private String description;
 
-    private List<Address> addresses;
+    private Set<String> addresses;
 }
