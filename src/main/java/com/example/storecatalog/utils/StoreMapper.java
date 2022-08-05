@@ -3,6 +3,7 @@ package com.example.storecatalog.utils;
 import com.example.storecatalog.document.Address;
 import com.example.storecatalog.document.Store;
 import com.example.storecatalog.dto.StoreDTO;
+import com.example.storecatalog.service.AddressService;
 import com.example.storecatalog.view.StoreView;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.util.List;
 public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
 
     private AddressMapper addressMapper;
+    private AddressService addressService;
 
     @Override
     public StoreView toView(Store entity) {
@@ -23,14 +25,12 @@ public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
         storeView.setName(entity.getName());
         storeView.setDescription(entity.getDescription());
 
-        List<Address> addresses = entity.getAddresses();
-
-        if(addresses != null) {
-            storeView.setAddresses(
-                    addresses.stream()
-                            .map(it -> addressMapper.toView(it))
-                            .toList()
-            );
+        if(entity.getAddresses() != null) {
+            List<Address> addresses = addressService.idsToAddress(entity.getAddresses());
+            storeView.setAddresses(addresses
+                    .stream()
+                    .map(it -> addressMapper.toView(it))
+                    .toList());
         }
 
         return storeView;
@@ -44,5 +44,13 @@ public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
         store.setDescription(dto.getDescription());
 
         return store;
+    }
+
+    @Override
+    public Store toEntity(StoreDTO dto, Store entity) {
+        if (dto.getName() != null) entity.setName(dto.getName());
+        if (dto.getDescription() != null) entity.setDescription(dto.getDescription());
+
+        return entity;
     }
 }
