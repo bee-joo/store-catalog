@@ -15,9 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -40,13 +41,16 @@ public class StoreService {
         if (store.isPresent()) {
             StoreView storeView = storeMapper.toView(store.get());
             return new ResponseEntity<>(storeView, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public List<Store> findAllStores() {
-        return storeRepository.findAll();
+    public List<StoreView> findAllStores() {
+        return storeRepository.findAll()
+                .stream()
+                .map(it -> storeMapper.toView(it))
+                .toList();
     }
 
     public List<AddressView> findAllAddressesById(String id) {
@@ -56,11 +60,11 @@ public class StoreService {
                 .toList();
     }
 
-    public ResponseEntity<List<Address>> addAddressToStore(String id, List<AddressDTO> addresses) {
+    public ResponseEntity<List<Address>> addAddressToStore(String id, Set<AddressDTO> addresses) {
         Optional<Store> store = storeRepository.findById(id);
 
         if (store.isPresent()) {
-            List<Address> newAddresses = addresses
+            Set<Address> newAddresses = addresses
                     .stream()
                     .map(it -> {
                         Address address = addressMapper.toEntity(it);
@@ -68,15 +72,19 @@ public class StoreService {
 
                         return address;
                     })
-                    .toList();
+                    .collect(Collectors.toSet());
 
             List<Address> storedAddresses = addressRepository.saveAll(newAddresses);
+            Set<String> addressIds =
+                    storedAddresses.stream()
+                            .map(Address::getId)
+                            .collect(Collectors.toSet());
 
             Store newStore = store.get();
             if (newStore.getAddresses() == null) {
-                newStore.setAddresses(newAddresses);
+                newStore.setAddresses(addressIds);
             } else {
-                newStore.getAddresses().addAll(storedAddresses);
+                newStore.getAddresses().addAll(addressIds);
             }
 
             storeRepository.save(newStore);
@@ -87,8 +95,32 @@ public class StoreService {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public void deleteStore(String id) {
+    public ResponseEntity<Store> updateStore(String id, StoreDTO storeDTO) {
+        Optional<Store> storeOptional = storeRepository.findById(id);
+
+        if (storeOptional.isPresent()) {
+            Store storeEntity = storeMapper.toEntity(storeDTO, storeOptional.get());
+
+            return new ResponseEntity<>(storeRepository.save(storeEntity), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    public HttpStatus deleteStore(String id) {
         addressRepository.deleteAddressesByStoreId(id);
         storeRepository.deleteById(id);
+
+        return HttpStatus.OK;
+    }
+
+    public ResponseEntity<Address> updateStoreAddress(String storeId, String addressId, AddressDTO addressDTO) {
+        Optional<Address> addressOptional = addressRepository.findAddressByIdAndStoreId(addressId, storeId);
+
+        if (addressOptional.isPresent()) {
+            Address addressEntity = addressMapper.toEntity(addressDTO, addressOptional.get());
+
+            return new ResponseEntity<>(addressRepository.save(addressEntity), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
