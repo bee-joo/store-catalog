@@ -3,42 +3,46 @@ package com.example.storecatalog.utils;
 import com.example.storecatalog.document.Address;
 import com.example.storecatalog.document.Store;
 import com.example.storecatalog.dto.StoreDTO;
+import com.example.storecatalog.exception.ValidationException;
 import com.example.storecatalog.repository.AddressRepository;
 import com.example.storecatalog.view.StoreView;
 import lombok.AllArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
+@Setter
+public class StoreMapper {
 
-    private AddressMapper addressMapper;
-    private AddressRepository addressRepository;
+    private static AddressRepository addressRepository;
 
-    @Override
-    public StoreView toView(Store entity) {
+    public static StoreView toView(Store entity) {
         StoreView storeView = new StoreView();
 
         storeView.setId(entity.getId());
         storeView.setName(entity.getName());
         storeView.setDescription(entity.getDescription());
 
-        if(entity.getAddresses() != null) {
+        if (entity.getAddresses() != null) {
             List<Address> addresses = (List<Address>) addressRepository.findAllById(entity.getAddresses());
             storeView.setAddresses(addresses
                     .stream()
-                    .map(it -> addressMapper.toView(it))
+                    .map(AddressMapper::toView)
                     .toList());
         }
 
         return storeView;
     }
 
-    @Override
-    public Store toEntity(StoreDTO dto) {
+    public static Store toEntity(StoreDTO dto) {
         Store store = new Store();
+
+        if (dto.getName() == null || dto.getDescription() == null) {
+            throw new ValidationException("Fields can't be null!");
+        }
 
         store.setName(dto.getName());
         store.setDescription(dto.getDescription());
@@ -46,8 +50,8 @@ public class StoreMapper implements Mapper<Store, StoreView, StoreDTO>{
         return store;
     }
 
-    @Override
-    public Store toEntity(StoreDTO dto, Store entity) {
+
+    public static Store updateEntity(StoreDTO dto, Store entity) {
         if (dto.getName() != null) entity.setName(dto.getName());
         if (dto.getDescription() != null) entity.setDescription(dto.getDescription());
 
